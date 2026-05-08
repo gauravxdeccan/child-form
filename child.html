@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Child Form</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #fafafa;
+      color: #1a1a1a;
+    }
+    h2 { margin-top: 0; color: #333; font-size: 18px; }
+    .field { margin-bottom: 14px; }
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #444;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"],
+    input[type="tel"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+      background: white;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+    .radio-group, .checkbox-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .radio-group label, .checkbox-group label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 400;
+      margin-bottom: 0;
+    }
+    .error {
+      color: #dc2626;
+      font-size: 12px;
+      margin-top: 4px;
+      display: none;
+    }
+    .error.visible { display: block; }
+    .field.has-error input,
+    .field.has-error select,
+    .field.has-error textarea {
+      border-color: #dc2626;
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    button {
+      padding: 9px 18px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    button:hover { background: #4338ca; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .saved-banner {
+      padding: 8px 12px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      border-radius: 6px;
+      font-size: 13px;
+      display: none;
+    }
+    .saved-banner.visible { display: block; }
+  </style>
+</head>
+<body>
+  <h2>User Profile Form</h2>
+  <form id="form" novalidate>
+    <div class="field">
+      <label for="firstName">First Name *</label>
+      <input type="text" id="firstName" name="firstName" />
+      <div class="error" data-for="firstName"></div>
+    </div>
+
+    <div class="field">
+      <label for="lastName">Last Name *</label>
+      <input type="text" id="lastName" name="lastName" />
+      <div class="error" data-for="lastName"></div>
+    </div>
+
+    <div class="field">
+      <label for="email">Email *</label>
+      <input type="email" id="email" name="email" />
+      <div class="error" data-for="email"></div>
+    </div>
+
+    <div class="field">
+      <label for="phone">Phone</label>
+      <input type="tel" id="phone" name="phone" />
+    </div>
+
+    <div class="field">
+      <label for="age">Age *</label>
+      <input type="number" id="age" name="age" min="0" max="120" />
+      <div class="error" data-for="age"></div>
+    </div>
+
+    <div class="field">
+      <label for="dob">Date of Birth</label>
+      <input type="date" id="dob" name="dob" />
+    </div>
+
+    <div class="field">
+      <label for="country">Country *</label>
+      <select id="country" name="country">
+        <option value="">-- Select --</option>
+        <option value="IN">India</option>
+        <option value="US">United States</option>
+        <option value="GB">United Kingdom</option>
+        <option value="DE">Germany</option>
+        <option value="JP">Japan</option>
+      </select>
+      <div class="error" data-for="country"></div>
+    </div>
+
+    <div class="field">
+      <label>Gender</label>
+      <div class="radio-group">
+        <label><input type="radio" name="gender" value="male" /> Male</label>
+        <label><input type="radio" name="gender" value="female" /> Female</label>
+        <label><input type="radio" name="gender" value="other" /> Other</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Interests</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" name="interests" value="tech" /> Tech</label>
+        <label><input type="checkbox" name="interests" value="sports" /> Sports</label>
+        <label><input type="checkbox" name="interests" value="music" /> Music</label>
+        <label><input type="checkbox" name="interests" value="travel" /> Travel</label>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="bio">Bio</label>
+      <textarea id="bio" name="bio" rows="3"></textarea>
+    </div>
+
+    <div class="actions">
+      <button type="submit" id="submitBtn">Save</button>
+      <div class="saved-banner" id="savedBanner">✓ Saved to parent</div>
+    </div>
+  </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/@iframe-resizer/child@5"></script>
+  <script>
+    // ============================================================
+    // Configure for your environment
+    // In production, set this to the parent's exact origin
+    // (e.g. 'https://app.example.com'), never '*'
+    // ============================================================
+    const PARENT_ORIGIN = '*';
+
+    const MESSAGE_TYPES = {
+      READY:          'READY',           // child → parent (on load)
+      FORM_PREFILL:   'FORM_PREFILL',    // parent → child (initial values)
+      FORM_DATA:      'FORM_DATA',       // child → parent (validated value, sets RHF)
+      SUBMIT_REQUEST: 'SUBMIT_REQUEST',  // parent → child (please run submit)
+      SUBMIT_RESULT:  'SUBMIT_RESULT',   // child → parent (success or failure ack)
+    };
+
+    const form = document.getElementById('form');
+    const banner = document.getElementById('savedBanner');
+
+    // ============================================================
+    // Send helper
+    // ============================================================
+    const send = (message) => {
+      window.parent.postMessage({ ...message, source: 'child' }, PARENT_ORIGIN);
+    };
+
+    // ============================================================
+    // Read full form snapshot
+    // ============================================================
+    const getFormData = () => {
+      const data = {};
+      form.querySelectorAll(
+        'input[type="text"], input[type="email"], input[type="number"], ' +
+        'input[type="date"], input[type="tel"], select, textarea'
+      ).forEach((el) => { data[el.name] = el.value; });
+
+      // Radios — every group gets a key, even when nothing is selected
+      form.querySelectorAll('input[type="radio"]').forEach((el) => {
+        if (!(el.name in data)) data[el.name] = '';
+      });
+      form.querySelectorAll('input[type="radio"]:checked').forEach((el) => {
+        data[el.name] = el.value;
+      });
+
+      // Checkboxes — group into arrays
+      const checkboxNames = new Set();
+      form.querySelectorAll('input[type="checkbox"]').forEach((el) => {
+        checkboxNames.add(el.name);
+      });
+      checkboxNames.forEach((name) => {
+        const checked = form.querySelectorAll(
+          `input[type="checkbox"][name="${name}"]:checked`
+        );
+        data[name] = Array.from(checked).map((el) => el.value);
+      });
+
+      return data;
+    };
+
+    // ============================================================
+    // Apply prefill (full or partial) from parent
+    // ============================================================
+    const applyPrefill = (data) => {
+      Object.entries(data || {}).forEach(([name, value]) => {
+        const elements = form.querySelectorAll(`[name="${name}"]`);
+        if (elements.length === 0) return;
+
+        const first = elements[0];
+        if (first.type === 'radio') {
+          elements.forEach((el) => { el.checked = el.value === value; });
+        } else if (first.type === 'checkbox') {
+          const values = Array.isArray(value) ? value : [value];
+          elements.forEach((el) => { el.checked = values.includes(el.value); });
+        } else {
+          const newValue = value == null ? '' : String(value);
+          if (first.value !== newValue) first.value = newValue;
+        }
+      });
+    };
+
+    // ============================================================
+    // Validation — pure function, also paints inline errors
+    // ============================================================
+    const validate = () => {
+      const data = getFormData();
+      const errors = {};
+
+      if (!data.firstName?.trim()) errors.firstName = 'First name is required';
+      if (!data.lastName?.trim()) errors.lastName = 'Last name is required';
+      if (!data.email?.trim()) {
+        errors.email = 'Email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+        errors.email = 'Invalid email format';
+      }
+      if (!data.age) {
+        errors.age = 'Age is required';
+      } else if (Number(data.age) < 18) {
+        errors.age = 'Must be 18 or older';
+      }
+      if (!data.country) errors.country = 'Please select a country';
+
+      // Paint inline errors
+      form.querySelectorAll('.field').forEach((f) => f.classList.remove('has-error'));
+      form.querySelectorAll('.error').forEach((el) => {
+        el.classList.remove('visible');
+        el.textContent = '';
+      });
+      Object.entries(errors).forEach(([name, msg]) => {
+        const el = form.querySelector(`[name="${name}"]`);
+        if (el) el.closest('.field')?.classList.add('has-error');
+        const errEl = form.querySelector(`.error[data-for="${name}"]`);
+        if (errEl) {
+          errEl.textContent = msg;
+          errEl.classList.add('visible');
+        }
+      });
+
+      return { valid: Object.keys(errors).length === 0, errors, data };
+    };
+
+    // ============================================================
+    // The single submit pipeline — used by both local button and
+    // remote SUBMIT_REQUEST from parent.
+    //
+    // - On success: sends FORM_DATA (sets parent's RHF value) AND
+    //   SUBMIT_RESULT { ok: true } (resolves parent's pending promise).
+    // - On failure: sends ONLY SUBMIT_RESULT { ok: false, errors }.
+    //   FORM_DATA is gated behind successful validation by design.
+    //
+    // requestId is echoed back so the parent can correlate the
+    // response with its originating SUBMIT_REQUEST. Local clicks
+    // pass undefined (no correlation needed).
+    // ============================================================
+    const performSubmit = (requestId) => {
+      const result = validate();
+
+      if (result.valid) {
+        send({
+          type: MESSAGE_TYPES.FORM_DATA,
+          payload: result.data,
+        });
+        send({
+          type: MESSAGE_TYPES.SUBMIT_RESULT,
+          payload: { requestId, ok: true, data: result.data },
+        });
+        // Local UX: brief "saved" confirmation
+        banner.classList.add('visible');
+        setTimeout(() => banner.classList.remove('visible'), 2000);
+      } else {
+        send({
+          type: MESSAGE_TYPES.SUBMIT_RESULT,
+          payload: { requestId, ok: false, errors: result.errors },
+        });
+      }
+    };
+
+    // ============================================================
+    // Local submit (user clicked the Save button inside the iframe)
+    // ============================================================
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      performSubmit(undefined);
+    });
+
+    // Hide the saved banner the moment the user starts editing again
+    form.addEventListener('input', () => banner.classList.remove('visible'));
+
+    // ============================================================
+    // Listen for parent messages
+    // ============================================================
+    window.addEventListener('message', (event) => {
+      // In production: if (event.origin !== PARENT_ORIGIN) return;
+      if (event.data?.source !== 'parent') return;
+
+      const { type, payload } = event.data;
+
+      if (type === MESSAGE_TYPES.FORM_PREFILL) {
+        applyPrefill(payload);
+        return;
+      }
+
+      if (type === MESSAGE_TYPES.SUBMIT_REQUEST) {
+        // Parent is asking us to run our submit logic.
+        // payload.requestId lets the parent correlate the response.
+        const requestId = payload?.requestId;
+        performSubmit(requestId);
+        return;
+      }
+    });
+
+    // ============================================================
+    // Announce ready
+    // ============================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      send({ type: MESSAGE_TYPES.READY });
+    });
+  </script>
+</body>
+</html>
